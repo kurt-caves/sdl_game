@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "character.h"
 
 int main(void) {
     // initialize SDL and check for errors
