@@ -8,7 +8,7 @@ CFLAGS = -I/usr/include/SDL2 -D_REENTRANT
 LDFLAGS = -lSDL2 -lSDL2_image
 
 # Source files
-SRC = src/main.c
+SRC = src/main.c src/character.c
 
 # Object files
 OBJ = $(SRC:.c=.o)

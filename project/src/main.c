@@ -51,31 +51,65 @@ int main(void) {
         return 1;
     }
 
+    // load in the main character
+    struct Character character;
+    if(!Character_Init(&character, renderer, "assets/mage.png", 100, 100, 32, 32)) {
+        fprintf(stderr, "Failed to initialize main character: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return 1;
+    }
+
+
     bool running = true;
-    // bool inventoryVisible = false;
+    const uint8_t *keyState = SDL_GetKeyboardState(NULL);
     SDL_Event event;
     while (running) {
-    // Handle events
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-            running = false;
+        // Handle events
+         SDL_PumpEvents();
+
+        if(keyState[SDL_SCANCODE_W]) {
+            character.rect.y -= 1;
         }
-            // Handle other events here if needed
+        if(keyState[SDL_SCANCODE_S]) {
+            character.rect.y += 1;
+        }
+        if(keyState[SDL_SCANCODE_A]) {
+            character.rect.x -= 1;
+        }
+        if(keyState[SDL_SCANCODE_D]) {
+            character.rect.x += 1;
         }
 
-        // Clear screen
-        SDL_RenderClear(renderer);
+        while (SDL_PollEvent(&event)) {
+           
 
-        // Render background
-        SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
+            if (event.type == SDL_QUIT) {
+                running = false;
+            }
 
-        // Present renderer
-        SDL_RenderPresent(renderer);
+                // Handle other events here if needed
+            }
+
+            // Clear screen
+            SDL_RenderClear(renderer);
+
+            // Render background
+            SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
+
+            // render main character
+            SDL_RenderCopy(renderer, character.texture, NULL, &character.rect);
+
+            // Present renderer
+            SDL_RenderPresent(renderer);
     }
 
     // Cleanup
     // SDL_DestroyTexture(menuTexture);
     // SDL_DestroyTexture(main_character.texture);
+    SDL_DestroyTexture(character.texture);
     SDL_DestroyTexture(bgTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
