@@ -82,18 +82,11 @@ int main(void) {
         SDL_PumpEvents();
         // -----------------------------------
         // for wasd
-        if(keyState[SDL_SCANCODE_W]) {
-            character.rect.y -= 3;
-        }
-        if(keyState[SDL_SCANCODE_S]) {
-            character.rect.y += 3;
-        }
-        if(keyState[SDL_SCANCODE_A]) {
-            character.rect.x -= 3;
-        }
-        if(keyState[SDL_SCANCODE_D]) {
-            character.rect.x += 3;
-        }
+        if(keyState[SDL_SCANCODE_W]) character.rect.y -= 3;
+        if(keyState[SDL_SCANCODE_S]) character.rect.y += 3;
+        if(keyState[SDL_SCANCODE_A]) character.rect.x -= 3;
+        if(keyState[SDL_SCANCODE_D]) character.rect.x += 3;
+        
         // -----------------------------------
 
         
@@ -138,6 +131,7 @@ int main(void) {
     // Cleanup
     // SDL_DestroyTexture(menuTexture);
     // SDL_DestroyTexture(main_character.texture);
+    SDL_DestroyTexture(pauseMenu);
     SDL_DestroyTexture(character.texture);
     SDL_DestroyTexture(bgTexture);
     SDL_DestroyRenderer(renderer);
