@@ -51,6 +51,16 @@ int main(void) {
         return 1;
     }
 
+    SDL_Texture *pauseMenu = IMG_LoadTexture(renderer, "assets/background.png");
+    if (bgTexture == NULL) {
+        fprintf(stderr, "IMG_LoadTexture Error: %s\n", IMG_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return 1;
+    }
+
     // load in the main character
     struct Character character;
     if(!Character_Init(&character, renderer, "assets/mage.png", 100, 100, 32, 32)) {
@@ -64,24 +74,29 @@ int main(void) {
 
 
     bool running = true;
+    bool isPaused = false;
     const uint8_t *keyState = SDL_GetKeyboardState(NULL);
     SDL_Event event;
     while (running) {
         // Handle events
-         SDL_PumpEvents();
-
+        SDL_PumpEvents();
+        // -----------------------------------
+        // for wasd
         if(keyState[SDL_SCANCODE_W]) {
-            character.rect.y -= 1;
+            character.rect.y -= 3;
         }
         if(keyState[SDL_SCANCODE_S]) {
-            character.rect.y += 1;
+            character.rect.y += 3;
         }
         if(keyState[SDL_SCANCODE_A]) {
-            character.rect.x -= 1;
+            character.rect.x -= 3;
         }
         if(keyState[SDL_SCANCODE_D]) {
-            character.rect.x += 1;
+            character.rect.x += 3;
         }
+        // -----------------------------------
+
+        
 
         while (SDL_PollEvent(&event)) {
            
@@ -90,7 +105,10 @@ int main(void) {
                 running = false;
             }
 
-                // Handle other events here if needed
+            if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+                isPaused = !isPaused;
+            }
+
             }
 
             // Clear screen
@@ -99,8 +117,19 @@ int main(void) {
             // Render background
             SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
 
+
             // render main character
             SDL_RenderCopy(renderer, character.texture, NULL, &character.rect);
+
+            if(isPaused) {
+                SDL_RenderCopy(renderer, pauseMenu, NULL, NULL);
+            }
+
+            // render pause menu
+            // if(keyState[SDL_SCANCODE_ESCAPE]) {
+            //     SDL_RenderCopy(renderer, pauseMenu, NULL, NULL);
+            //     printf("escape\n");
+            // }
 
             // Present renderer
             SDL_RenderPresent(renderer);

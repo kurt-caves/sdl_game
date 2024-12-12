@@ -8,7 +8,7 @@ CFLAGS = -I/opt/homebrew/include
 LDFLAGS = -L/opt/homebrew/lib -lSDL2 -lSDL2_image
 
 # Source files
-SRC = src/main.c
+SRC = src/main.c src/character.c
 
 # Object files
 OBJ = $(SRC:.c=.o)
