@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "main_character.h": "c",
+        "menu.h": "c"
+    }
+}

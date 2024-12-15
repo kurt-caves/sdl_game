@@ -52,7 +52,7 @@ int main(void) {
     }
 
     SDL_Texture *pauseMenu = IMG_LoadTexture(renderer, "assets/background.png");
-    if (bgTexture == NULL) {
+    if (pauseMenu == NULL) {
         fprintf(stderr, "IMG_LoadTexture Error: %s\n", IMG_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
