@@ -12,6 +12,7 @@ SDL_Texture *bgTexture = NULL;
 SDL_Texture *mainChar = NULL;
 SDL_Texture *menuTexture = NULL;
 SDL_Texture *buttonTexture = NULL;
+SDL_Texture *qButtonTexture = NULL;
 
 int init_window(void) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -63,6 +64,12 @@ int init_window(void) {
         return false;
     }
 
+    // qButtonTexture = IMG_LoadTexture(renderer, "menu/quit_button.png");
+    // if (!buttonTexture) {
+    //     fprintf(stderr, "IMG_LoadTexture Error qButton.png: %s\n", IMG_GetError());
+    //     return false;
+    // }
+
     
 
     // load image into memory
@@ -86,6 +93,7 @@ void render(struct MainChar *mChar, struct CloseButton *cButton) {
     if (currentState == GAME_PAUSED ) {
         SDL_RenderCopy(renderer, menuTexture, NULL, NULL);
         SDL_RenderCopy(renderer, buttonTexture, NULL, &cButton->rect);
+        // SDL_RenderCopy(renderer, qButtonTexture, NULL, &qButton->rect);
     }
     
     SDL_RenderPresent(renderer);

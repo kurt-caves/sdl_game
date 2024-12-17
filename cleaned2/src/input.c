@@ -31,8 +31,7 @@ CloseButton *cButton) {
     mChar->rect.x = (int)mChar->x;
     mChar->rect.y = (int)mChar->y;
 
-    printf("Delta time: %f\n", delta_time);
-    printf("Character position: x=%f, y=%f\n", mChar->rect.x, mChar->rect.y);
+    
     
     // Handle one-time events
     while (SDL_PollEvent(&event)) {

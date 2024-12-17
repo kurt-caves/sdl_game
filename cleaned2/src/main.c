@@ -30,9 +30,13 @@ int main(void) {
 
     setup();
     struct MainChar *mChar = malloc(sizeof(struct MainChar ));
-    init_char(mChar, 0.0, 0.0, 32, 32);
+    init_char(mChar, 0.0, 0.0, 48, 48);
+
     struct CloseButton *cButton = malloc(sizeof(struct CloseButton));
     init_close_button(cButton, 768, 0, 32, 32);
+
+    // struct QuitButton *qButton = malloc(sizeof(struct QuitButton));
+    // init_close_button(qButton, 400, 300, 96, 25);
     
     while(currentState != GAME_QUIT) {
 
@@ -45,6 +49,8 @@ int main(void) {
     }
 
     destroy_window();
+    free(mChar);
+    free(cButton);
 
     return 0;
 }

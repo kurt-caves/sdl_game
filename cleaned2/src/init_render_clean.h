@@ -11,6 +11,7 @@ SDL_Texture *bgTexture;
 SDL_Texture *mainChar;
 SDL_Texture *menuTexture;
 SDL_Texture *buttonTexture;
+// SDL_Texture *qButtonTexture;
 
 int init_window(void);
 void render(
