@@ -28,6 +28,8 @@ struct MainMenu {
     SDL_Rect rect;
 };
 
+
+
 typedef struct {
    
     SDL_Window* window;
@@ -59,7 +61,15 @@ int init_window(GameState *state) {
         fprintf(stderr, "IMG_Init Error: %s\n", IMG_GetError());
         return 1;
     }
-    state->window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800,600, 0);
+
+    // init font
+    if (TTF_Init() == -1) {
+        fprintf(stderr, "TTF_Init Error: %s\n", TTF_GetError());
+        return 1;
+    }
+
+
+    state->window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,WINDOW_HEIGHT, 0);
     
     if (!state->window) {
         fprintf(stderr, "Error creating SDL Window: %s\n", SDL_GetError());
@@ -85,10 +95,10 @@ int init_window(GameState *state) {
     }
 
     /// main pause menu and it's items
-    state->textures[2] = IMG_LoadTexture(state->renderer, "pause_menu.png");
+    state->textures[2] = IMG_LoadTexture(state->renderer, "main-menu.png");
     state->texture_count++;
     if (!state->textures[2]) {
-        fprintf(stderr, "IMG_LoadTexture Error pause_menu.png: %s\n", IMG_GetError());
+        fprintf(stderr, "IMG_LoadTexture Error main-menu.png: %s\n", IMG_GetError());
         return false;
     }
 
@@ -97,6 +107,20 @@ int init_window(GameState *state) {
     if (!state->textures[3]) {
         fprintf(stderr, "IMG_LoadTexture Error x_button.png: %s\n", IMG_GetError());
         return false;
+    }
+
+    state->textures[4] = IMG_LoadTexture(state->renderer, "glove_pointer.png");
+    state->texture_count++;
+    if (!state->textures[4]) {
+        fprintf(stderr, "IMG_LoadTexture Error glove_pointer.png: %s\n", IMG_GetError());
+        return false;
+    }
+
+    // Load your font
+    state->font = TTF_OpenFont("Tiny RPG - Fine Fantasy Strategies.ttf", 64);
+    if (!state->font) {
+        fprintf(stderr, "Font loading error: %s\n", TTF_GetError());
+        return 1;
     }
 
 
@@ -120,10 +144,28 @@ void render(GameState *state) {
 
     // render the main pause menu
     if (state->currentState == GAME_PAUSED) {
+        // render the brown background
         SDL_RenderCopy(state->renderer, state->textures[2], NULL, NULL);
 
+        // render the close button
         SDL_Rect close_button = {768, 0, 32, 32};
         SDL_RenderCopy(state->renderer,state->textures[3], NULL, &close_button);
+
+        SDL_Rect glove_pointer = {200, 300, 64, 64};
+        SDL_RenderCopy(state->renderer,state->textures[4], NULL, &glove_pointer);
+
+        // render the text
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface* surface = TTF_RenderText_Blended(state->font, "Hello World", white);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(state->renderer, surface);
+
+        SDL_Rect textRect = {400, 300, surface->w, surface->h}; // Position and size
+        textRect.x = (WINDOW_WIDTH - surface->w) / 2;  // Center horizontally
+        textRect.y = (WINDOW_HEIGHT - surface->h) / 2; // Center vertically
+        SDL_RenderCopy(state->renderer, texture, NULL, &textRect);
+
+        SDL_FreeSurface(surface);
+        SDL_DestroyTexture(texture);
     }
 
     SDL_RenderPresent(state->renderer);
@@ -141,6 +183,9 @@ void destroy_window(GameState *state) {
     }
     for(int i = 0; i < state->texture_count; i++) {
         SDL_DestroyTexture(state->textures[i]);
+    }
+    if(state->font) {
+        TTF_CloseFont(state->font);
     }
     free(state);
     SDL_Quit();
