@@ -9,6 +9,13 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+// for main menu
+#define MENU_BACKGROUND_TEXTURE 2
+#define MENU_CLOSE_BUTTON_TEXTURE 3
+#define MENU_POINTER_TEXTURE 4
+#define MENU_CONTINUE_BUTTON_TEXTURE 5
+#define MENU_OPTIONS_BUTTON_TEXTURE 6
+#define MENU_QUIT_BUTTON_TEXTURE 7
 
 
 typedef struct {
@@ -24,11 +31,23 @@ struct MainChar {
     SDL_Rect rect;
 };
 
-struct MainMenu {
+// main menu
+
+struct MenuItem {
     SDL_Rect rect;
+    char *text;
+    bool isSelected;
 };
 
-
+struct MainMenu {
+    SDL_Rect backgroundRect;
+    SDL_Rect closeButtonRect;
+    SDL_Rect pointerRect;
+    struct MenuItem *menuItems;
+    int itemCount;
+    int selectedIndex;
+    bool isVisible;
+};
 
 typedef struct {
    
@@ -94,27 +113,31 @@ int init_window(GameState *state) {
         return false;
     }
 
+    ////----------------------------------------------------------------------------------------
     /// main pause menu and it's items
-    state->textures[2] = IMG_LoadTexture(state->renderer, "main-menu.png");
+    state->textures[MENU_BACKGROUND_TEXTURE] = IMG_LoadTexture(state->renderer, "main-menu.png");
     state->texture_count++;
-    if (!state->textures[2]) {
+    if (!state->textures[MENU_BACKGROUND_TEXTURE]) {
         fprintf(stderr, "IMG_LoadTexture Error main-menu.png: %s\n", IMG_GetError());
         return false;
     }
 
-    state->textures[3] = IMG_LoadTexture(state->renderer, "x_button.png");
+    state->textures[MENU_CLOSE_BUTTON_TEXTURE] = IMG_LoadTexture(state->renderer, "x_button.png");
     state->texture_count++;
-    if (!state->textures[3]) {
+    if (!state->textures[MENU_CLOSE_BUTTON_TEXTURE]) {
         fprintf(stderr, "IMG_LoadTexture Error x_button.png: %s\n", IMG_GetError());
         return false;
     }
 
-    state->textures[4] = IMG_LoadTexture(state->renderer, "glove_pointer.png");
+    state->textures[MENU_POINTER_TEXTURE] = IMG_LoadTexture(state->renderer, "glove_pointer.png");
     state->texture_count++;
-    if (!state->textures[4]) {
+    if (!state->textures[MENU_POINTER_TEXTURE]) {
         fprintf(stderr, "IMG_LoadTexture Error glove_pointer.png: %s\n", IMG_GetError());
         return false;
     }
+
+    ////----------------------------------------------------------------------------------------
+
 
     // Load your font
     state->font = TTF_OpenFont("Tiny RPG - Fine Fantasy Strategies.ttf", 64);
@@ -135,6 +158,93 @@ void init_player(struct MainChar *player, float x, float y, int width, int heigh
     player->rect = (SDL_Rect){(int)x, (int)y, width, height};
 }
 
+void init_main_menu(struct MainMenu *menu) {
+    // setup items in space
+    menu->backgroundRect = (SDL_Rect){0,0, WINDOW_WIDTH, WINDOW_HEIGHT};
+    menu->closeButtonRect = (SDL_Rect){768, 0, 32, 32};
+    menu->pointerRect = (SDL_Rect){0, 0, 64, 64};
+    menu->isVisible = false;
+
+    // allocate memory for menu items
+    menu->itemCount = 3;
+    menu->menuItems = malloc(sizeof(struct MenuItem) * menu->itemCount);
+
+    // center menu text buttons vertically
+    int itemHeight = 50;
+    int startY = (WINDOW_HEIGHT / 2) - (menu->itemCount * itemHeight);
+    
+    // continue button
+    menu->menuItems[0] = (struct MenuItem){
+        // x position from left
+        // y position from top
+        // width
+        // height
+        .rect = {WINDOW_WIDTH/2 - 100, startY, 200, itemHeight},
+        .text = "Continue",
+        .isSelected = true
+    };
+
+     // Options button
+    menu->menuItems[1] = (struct MenuItem){
+        .rect = {WINDOW_WIDTH/2 - 100, startY + itemHeight + 20, 200, itemHeight},
+        .text = "Options",
+        .isSelected = false
+    };
+    
+    // Quit button
+    menu->menuItems[2] = (struct MenuItem){
+        .rect = {WINDOW_WIDTH/2 - 100, startY + (itemHeight + 20) * 2, 200, itemHeight},
+        .text = "Quit",
+        .isSelected = false
+    };
+
+}
+
+void render_main_menu(GameState *state) {
+    // render the background
+    SDL_RenderCopy(state->renderer, state->textures[MENU_BACKGROUND_TEXTURE], NULL, &state->mainMenu.backgroundRect);
+
+    // close button
+    SDL_RenderCopy(state->renderer, state->textures[MENU_CLOSE_BUTTON_TEXTURE], NULL, &state->mainMenu.closeButtonRect);
+
+    // render menu items
+    // gold for selected item
+    SDL_Color selectedColor = {255, 215, 0, 255};
+    SDL_Color textColor = {255, 255, 255, 255};
+
+    // loop through and render menu items
+    for (int i = 0; i < state->mainMenu.itemCount; i++) {
+        // make a pointer to the thing we need to render
+        struct MenuItem *item = &state->mainMenu.menuItems[i];
+
+        // render the text, if its selected make it gold
+        SDL_Color currentColor = item->isSelected ? selectedColor : textColor;
+        SDL_Surface *surface = TTF_RenderText_Blended(state->font, item->text, currentColor);
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(state->renderer, surface);
+
+        // Center text in button
+        SDL_Rect textRect = item->rect;
+        textRect.w = surface->w;
+        textRect.h = surface->h;
+        textRect.x = item->rect.x + (item->rect.w - surface->w) / 2;
+        textRect.y = item->rect.y + (item->rect.h - surface->h) / 2;
+
+        SDL_RenderCopy(state->renderer, texture, NULL, &textRect);
+        
+        // Render pointer next to selected item
+        if (item->isSelected) {
+            state->mainMenu.pointerRect.x = item->rect.x - state->mainMenu.pointerRect.w - 10;
+            state->mainMenu.pointerRect.y = item->rect.y + (item->rect.h - state->mainMenu.pointerRect.h) / 2;
+            SDL_RenderCopy(state->renderer, state->textures[MENU_POINTER_TEXTURE], NULL, &state->mainMenu.pointerRect);
+        }
+        
+        SDL_FreeSurface(surface);
+        SDL_DestroyTexture(texture);
+
+    }
+
+}
+
 void render(GameState *state) {
     SDL_RenderClear(state->renderer);
     // render main map
@@ -144,28 +254,7 @@ void render(GameState *state) {
 
     // render the main pause menu
     if (state->currentState == GAME_PAUSED) {
-        // render the brown background
-        SDL_RenderCopy(state->renderer, state->textures[2], NULL, NULL);
-
-        // render the close button
-        SDL_Rect close_button = {768, 0, 32, 32};
-        SDL_RenderCopy(state->renderer,state->textures[3], NULL, &close_button);
-
-        SDL_Rect glove_pointer = {200, 300, 64, 64};
-        SDL_RenderCopy(state->renderer,state->textures[4], NULL, &glove_pointer);
-
-        // render the text
-        SDL_Color white = {255, 255, 255, 255};
-        SDL_Surface* surface = TTF_RenderText_Blended(state->font, "Hello World", white);
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(state->renderer, surface);
-
-        SDL_Rect textRect = {400, 300, surface->w, surface->h}; // Position and size
-        textRect.x = (WINDOW_WIDTH - surface->w) / 2;  // Center horizontally
-        textRect.y = (WINDOW_HEIGHT - surface->h) / 2; // Center vertically
-        SDL_RenderCopy(state->renderer, texture, NULL, &textRect);
-
-        SDL_FreeSurface(surface);
-        SDL_DestroyTexture(texture);
+        render_main_menu(state);
     }
 
     SDL_RenderPresent(state->renderer);
@@ -191,9 +280,36 @@ void destroy_window(GameState *state) {
     SDL_Quit();
 }
 
+void process_main_menu_input(GameState *state, SDL_Event *event) {
+    struct MainMenu *menu = &state->mainMenu;
+    switch(event->type) {
+        case SDL_KEYDOWN:
+            printf("Here\n");
+            switch (event->key.keysym.sym)
+            {
+            case SDLK_DOWN:
+                printf("here\n");
+                menu->menuItems[menu->selectedIndex].isSelected = false;
+                menu->selectedIndex = (menu->selectedIndex + 1) % menu->itemCount;
+                menu->menuItems[menu->selectedIndex].isSelected = true;
+                break;
+            
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
 void process_input(GameState *state) {
     SDL_Event event;
+
+
     while (SDL_PollEvent(&event)) {
+        
+        
         switch (event.type)
         {
         // the 'x' button is pressed
@@ -203,12 +319,16 @@ void process_input(GameState *state) {
             break;
         
         case SDL_KEYDOWN:
+             if (state->currentState == GAME_PAUSED) {
+                process_main_menu_input(state, &event);
+            }
             switch (event.key.keysym.sym)
             {
             // press escape for main menu
             case SDLK_ESCAPE:
-                if(state->currentState == GAME_RUNNING)
+                if(state->currentState == GAME_RUNNING) {
                     state->currentState = GAME_PAUSED;
+                }
                 else if(state->currentState == GAME_PAUSED)
                     state->currentState = GAME_RUNNING;
                 break;
@@ -227,7 +347,7 @@ void process_input(GameState *state) {
 
 
 int main(void) {
-    GameState* state = malloc(sizeof(GameState));
+    GameState *state = malloc(sizeof(GameState));
     if (!state) {
         fprintf(stderr, "Failed to allocate game state\n");
         return 1;
@@ -242,6 +362,9 @@ int main(void) {
         free(state);
         return 1;
     }
+
+    init_main_menu(&state->mainMenu);
+
     state->player = malloc(sizeof(struct MainChar));
     init_player(state->player, 0.0,0.0,48,48);
 
