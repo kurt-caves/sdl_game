@@ -284,20 +284,42 @@ void process_main_menu_input(GameState *state, SDL_Event *event) {
     struct MainMenu *menu = &state->mainMenu;
     switch(event->type) {
         case SDL_KEYDOWN:
-            printf("Here\n");
-            switch (event->key.keysym.sym)
-            {
-            case SDLK_DOWN:
-                printf("here\n");
-                menu->menuItems[menu->selectedIndex].isSelected = false;
-                menu->selectedIndex = (menu->selectedIndex + 1) % menu->itemCount;
-                menu->menuItems[menu->selectedIndex].isSelected = true;
-                break;
-            
-            default:
-                break;
+            switch (event->key.keysym.sym) {
+                case SDLK_DOWN:
+                    // set selected to false
+                    menu->menuItems[menu->selectedIndex].isSelected = false;
+                    // update the selected index, modulo lets us start at 0 again
+                    menu->selectedIndex = (menu->selectedIndex + 1) % menu->itemCount;
+                    // set selected to true
+                    menu->menuItems[menu->selectedIndex].isSelected = true;
+                    break;
+                case SDLK_UP:
+                    // set selected to false
+                    menu->menuItems[menu->selectedIndex].isSelected = false;
+                    // update the selected index, modulo lets us start at 0 again
+                    menu->selectedIndex = ((menu->selectedIndex - 1 + menu->itemCount) % menu->itemCount);
+                    // set selected to true
+                    menu->menuItems[menu->selectedIndex].isSelected = true;
+                    break;
+                case SDLK_RETURN:
+                    
+                    if(menu->selectedIndex == 2) {
+                        state->currentState = GAME_QUIT;
+                    }
+                    if(menu->selectedIndex == 0) {
+                        state->currentState = GAME_RUNNING;
+                    }
+                    if(menu->selectedIndex == 1) {
+                        printf("currently selected index: %d\n", menu->selectedIndex);
+                    }
+                    break;
+                
+                default:
+                    break;
             }
             break;
+
+        
         default:
             break;
     }
@@ -336,7 +358,22 @@ void process_input(GameState *state) {
             default:
                 break;
             }
+        break;
         case SDL_MOUSEBUTTONDOWN:
+            // we want to see if they click on the 'x' button while the game is paused
+            // this needs to be changed because it should only be checked 
+            // when the game is paused
+            if (state->currentState == GAME_PAUSED) {
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    struct SDL_Point mousePoint = {
+                        mousePoint.x = event.button.x,
+                        mousePoint.y = event.button.y
+                    };
+                if (SDL_PointInRect(&mousePoint, &state->mainMenu.closeButtonRect)) {
+                    state->currentState = GAME_RUNNING;
+                }
+                }
+            }
             break;
         
         default:
